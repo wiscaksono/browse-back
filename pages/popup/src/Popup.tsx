@@ -15,10 +15,10 @@ const humanizeDuration = (ms: number): string => {
   const hr = Math.floor(min / 60);
   const day = Math.floor(hr / 24);
 
-  if (day > 0) return `${day} day${day > 1 ? 's' : ''} ${hr % 24}h`;
-  if (hr > 0) return `${hr} hour${hr > 1 ? 's' : ''} ${min % 60}m`;
-  if (min > 0) return `${min} min${min > 1 ? 's' : ''} ${sec % 60}s`;
-  return `${sec} sec${sec !== 1 ? 's' : ''}`;
+  if (day > 0) return `${day}d ${hr % 24}h`;
+  if (hr > 0) return `${hr}h ${min % 60}m`;
+  if (min > 0) return `${min}m ${sec % 60}s`;
+  return `${sec}s`;
 };
 
 const estimateTimeSpent = (entries: WeeklyHistoryType[], maxSessionGapMinutes = 30): TimeSpentResult[] => {
@@ -71,21 +71,39 @@ const Popup = () => {
   const histories = useStorage(weeklyHistoryStorage);
 
   return (
-    <div className="bg-slate-50">
-      <header className="text-gray-900">
-        <h2>Weekly Self-Reflection Report</h2>
-        <p>Estimated time spent on each website</p>
-        <ul>
-          {estimateTimeSpent(histories).map(item => (
-            <li key={item.domainName}>
-              <a href={`https://${item.domainName}`} target="_blank" rel="noopener noreferrer">
+    <div className="bg-slate-50 p-2 text-slate-900">
+      <header className="mb-4 text-center">
+        <h2 className="text-xl font-bold text-slate-900">Your Weekly Digital Mirror</h2>
+        <p className="text-sm text-slate-600">
+          Ready for your weekly roast? Here's where your time <b>really</b> went.
+        </p>
+      </header>
+
+      <ul className="divide-y divide-slate-200">
+        {estimateTimeSpent(histories).map(item => (
+          <li key={item.domainName} className="flex flex-col gap-0.5 py-1.5">
+            <div className="flex items-center gap-2">
+              <img
+                src={`https://favicone.com/${item.domainName}?s=24`}
+                width={24}
+                height={24}
+                alt={item.websiteName}
+                className="size-6 shrink-0 rounded-full border border-slate-300 object-cover object-center"
+                onError={e => (e.currentTarget.src = 'https://placehold.co/400?text=?')}
+              />
+              <a
+                href={`https://${item.domainName}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 truncate font-semibold capitalize underline-offset-2 hover:underline">
                 {item.websiteName}
               </a>
-              <span>{humanizeDuration(item.timeSpent)}</span>
-            </li>
-          ))}
-        </ul>
-      </header>
+              <span className="ml-auto shrink-0 text-slate-600">{humanizeDuration(item.timeSpent)}</span>
+            </div>
+            <p className="text-xs text-slate-600">Three hours deep in Reddit rabbit holes. Did you find Wonderland?</p>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
