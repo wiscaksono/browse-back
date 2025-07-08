@@ -31,7 +31,7 @@ const manifest = {
   version: packageJson.version,
   description: '__MSG_extensionDescription__',
   host_permissions: ['<all_urls>'],
-  permissions: ['storage', 'scripting', 'tabs', 'notifications', 'storage'],
+  permissions: ['storage', 'scripting', 'tabs', 'notifications', 'history', 'alarms'],
   background: {
     service_worker: 'background.js',
     type: 'module',
@@ -59,6 +59,10 @@ const manifest = {
       matches: ['*://*/*'],
     },
   ],
+  action: {
+    default_popup: 'popup/index.html',
+    default_icon: 'icon-34.png',
+  },
 } satisfies ManifestType;
 
 export default manifest;
