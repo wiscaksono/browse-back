@@ -20,14 +20,13 @@ const gotWeeklyHistory = async () => {
 const storeHistory = async () => {
   const weeklyHistory = await gotWeeklyHistory();
   await weeklyHistoryStorage.set(weeklyHistory);
-  console.log('Weekly history stored.');
 };
 
 chrome.runtime.onInstalled.addListener(async () => {
   storeHistory();
 });
 
-chrome.alarms.create('hostoryUpdate', { periodInMinutes: 60 });
+chrome.alarms.create('hostoryUpdate', { periodInMinutes: 10 });
 
 chrome.alarms.onAlarm.addListener(alarm => {
   if (alarm.name === 'hostoryUpdate') storeHistory();
