@@ -43,19 +43,30 @@ export const estimateTimeSpent = (entries: WeeklyHistoryType[], maxSessionGapMin
   const filtered = entries
     .filter(e => e.url && typeof e.lastVisitTime === 'number')
     .sort((a, b) => a.lastVisitTime! - b.lastVisitTime!);
+
   const maxGap = maxSessionGapMinutes * 60 * 1000;
+  // A more reasonable default duration for a single visit
+  const defaultSingleVisitDuration = 2 * 60 * 1000; // 2 minutes
   const timeMap: Record<string, TimeSpentResult> = {};
+
+  if (filtered.length === 0) return [];
 
   for (let i = 0; i < filtered.length; i++) {
     const current = filtered[i];
     const next = filtered[i + 1];
-    let duration = maxGap;
+    let duration;
+
     if (next && typeof next.lastVisitTime === 'number' && typeof current.lastVisitTime === 'number') {
-      const gap = next.lastVisitTime! - current.lastVisitTime!;
+      const gap = next.lastVisitTime - current.lastVisitTime;
       duration = Math.min(gap, maxGap);
+    } else {
+      // For the very last item, assign a default duration instead of the max gap.
+      duration = defaultSingleVisitDuration;
     }
+
     const domainName = getDomainName(current.url!);
     const websiteName = getWebsiteName(current.url!);
+
     if (!timeMap[domainName]) {
       timeMap[domainName] = { domainName, websiteName, timeSpent: 0 };
     }
