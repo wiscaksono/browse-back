@@ -1,8 +1,8 @@
 import { ListItem } from './components/list-item';
 import { useStorage, withErrorBoundary, withSuspense, estimateTimeSpent } from '@extension/shared';
-import { weeklyHistoryStorage } from '@extension/storage';
+import { weeklyHistoryStorage, goalsStorage } from '@extension/storage';
 import { ErrorDisplay, LoadingSpinner } from '@extension/ui';
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 
 const timeRanges = [
   { label: 'Today', days: 1 },
@@ -12,9 +12,10 @@ const timeRanges = [
 ] as const;
 
 const Popup = () => {
+  const goals = useStorage(goalsStorage);
   const histories = useStorage(weeklyHistoryStorage);
+
   const [timeRangeDays, setTimeRangeDays] = useState(7); // Default to 7 days
-  const [roasts, setRoasts] = useState<{ website: string; roast: string }[]>([]);
 
   const filteredHistories = useMemo(() => {
     if (!histories) return [];
@@ -30,31 +31,16 @@ const Popup = () => {
 
   const withEstimation = useMemo(() => estimateTimeSpent(filteredHistories), [filteredHistories]);
 
-  useEffect(() => {
-    if (withEstimation.length === 0) {
-      setRoasts([]); // Clear old roasts
-      return;
+  const handleSetGoal = (domainName: string) => {
+    const hours = prompt(`Set a daily time limit for ${domainName} (in hours):`);
+    if (hours && !isNaN(parseFloat(hours))) {
+      const limitInMs = parseFloat(hours) * 60 * 60 * 1000;
+
+      // Update the goals storage
+      const newGoals = [...goals.filter(g => g.domainName !== domainName), { domainName, limit: limitInMs }];
+      goalsStorage.set(newGoals);
     }
-
-    const fetchRoasts = async () => {
-      try {
-        const response = await fetch(`https://gemini.wiscaksono.com`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(withEstimation.map(item => ({ website: item.domainName, timeSpent: item.timeSpent }))),
-        });
-
-        if (!response.ok) throw new Error(`API Error: ${response.status}`);
-
-        const result = (await response.json()) as { website: string; roast: string }[];
-        setRoasts(result);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchRoasts();
-  }, [withEstimation]);
+  };
 
   return (
     <div className="w-full bg-slate-50 p-3.5 text-slate-900">
@@ -79,13 +65,10 @@ const Popup = () => {
 
       <ul className="divide-y divide-slate-200">
         {withEstimation.length > 0 ? (
-          withEstimation.map(item => (
-            <ListItem
-              key={item.domainName}
-              item={item}
-              roast={roasts.find(r => r.website === item.domainName)?.roast ?? ''}
-            />
-          ))
+          withEstimation.map(item => {
+            const goal = goals.find(g => g.domainName === item.domainName);
+            return <ListItem key={item.domainName} item={item} onSetGoal={handleSetGoal} goal={goal} />;
+          })
         ) : (
           <p className="py-4 text-center text-slate-500">No Browse history for this period.</p>
         )}
