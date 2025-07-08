@@ -74,8 +74,8 @@ const Popup = () => {
           target="_blank"
           rel="noopener noreferrer"
           title="Open Settings"
-          className="grid size-[34px] place-items-center rounded-md border border-slate-300 text-lg hover:bg-slate-200">
-          ⚙️
+          className="rounded-md border border-slate-300 bg-white p-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500">
+          ⚙️ Settings
         </a>
       </div>
 
