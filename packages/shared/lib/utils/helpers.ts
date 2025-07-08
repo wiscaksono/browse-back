@@ -19,22 +19,45 @@ export const humanizeDuration = (ms: number): string => {
   return `${sec}s`;
 };
 
+/**
+ * Extracts a human-friendly website name from a URL.
+ * It prioritizes the most specific, non-'www' part of the domain.
+ *
+ * @example
+ * getWebsiteName('https://gemini.google.com/app') -> 'gemini'
+ * getWebsiteName('https://www.google.com/search') -> 'google'
+ * getWebsiteName('https://news.ycombinator.com') -> 'news'
+ * getWebsiteName('https://github.com') -> 'github'
+ */
 export const getWebsiteName = (url: string): string => {
   try {
     const hostname = new URL(url).hostname.replace(/^www\./, '');
     const parts = hostname.split('.');
-    if (parts.length > 2) return parts[parts.length - 2];
-    if (parts.length === 2) return parts[0];
+
+    // For domains like 'gemini.google.com' (3+ parts), the first part is the most specific name.
+    // For domains like 'google.com' (2 parts), the first part is the name.
+    if (parts.length > 1) return parts[0];
+
+    // Fallback for single-word hostnames (e.g., 'localhost') or invalid cases.
     return hostname;
-  } catch {
+  } catch (error) {
+    console.error(`Could not parse URL for website name: ${url}`, error);
     return url;
   }
 };
 
 export const getDomainName = (url: string): string => {
   try {
-    return new URL(url).hostname;
-  } catch {
+    const hostname = new URL(url).hostname;
+
+    // Check if the hostname starts with 'www.' and remove it if it does
+    if (hostname.startsWith('www.')) return hostname.slice(4);
+
+    // Otherwise, return the full hostname (including other subdomains)
+    return hostname;
+  } catch (error) {
+    // If the URL is invalid, return the original string as a fallback
+    console.error(`Could not parse URL: ${url}`, error);
     return url;
   }
 };

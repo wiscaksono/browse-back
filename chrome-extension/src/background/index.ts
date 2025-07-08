@@ -1,6 +1,12 @@
 import 'webextension-polyfill';
 import { getDomainName, humanizeDuration } from '@extension/shared';
-import { goalsStorage, dailyUsageStorage, notificationLogStorage, weeklyHistoryStorage } from '@extension/storage';
+import {
+  goalsStorage,
+  dailyUsageStorage,
+  notificationLogStorage,
+  weeklyHistoryStorage,
+  allowListStorage,
+} from '@extension/storage';
 
 // --- Constants ---
 const USAGE_CHECK_ALARM = 'usageChecker';
@@ -14,11 +20,12 @@ const USAGE_CHECK_INTERVAL_MIN = 1;
  * Checks the active tab, updates usage time, and triggers notifications if goals are exceeded.
  */
 const checkUsageAndNotify = async () => {
-  const [activeTabs, goals, usage, notifications] = await Promise.all([
+  const [activeTabs, goals, usage, notifications, allowList] = await Promise.all([
     chrome.tabs.query({ active: true, currentWindow: true }),
     goalsStorage.get(),
     dailyUsageStorage.get(),
     notificationLogStorage.get(),
+    allowListStorage.get(),
   ]);
 
   if (activeTabs.length === 0 || !activeTabs[0].url) return;
@@ -27,6 +34,7 @@ const checkUsageAndNotify = async () => {
   if (!activeTab.url?.startsWith('http')) return;
 
   const domain = getDomainName(activeTab.url);
+  if (allowList.includes(domain)) return;
   const goal = goals.find(g => g.domainName === domain);
 
   // If there's no goal for this site, no need to track it

@@ -63,6 +63,7 @@ const manifest = {
     default_popup: 'popup/index.html',
     default_icon: 'icon-34.png',
   },
+  options_page: 'options/index.html',
 } satisfies ManifestType;
 
 export default manifest;
