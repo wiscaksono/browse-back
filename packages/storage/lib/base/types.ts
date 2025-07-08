@@ -62,3 +62,9 @@ export interface Goal {
 }
 
 export type GoalsStorageType = BaseStorageType<Goal[]>;
+
+export type DailyUsage = Record<string, number>; // domainName: timeSpentInMs
+export type DailyUsageStorageType = BaseStorageType<DailyUsage>;
+
+export type NotificationLog = Record<string, number>; // domainName: timestamp
+export type NotificationLogStorageType = BaseStorageType<NotificationLog>;
