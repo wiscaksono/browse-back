@@ -1,9 +1,9 @@
 import { ListItem } from './components/list-item';
 import { useStorage, withErrorBoundary, withSuspense, estimateTimeSpent, getDomainName } from '@extension/shared';
-import { weeklyHistoryStorage, goalsStorage, allowListStorage } from '@extension/storage';
+import { weeklyHistoryStorage, goalsStorage, allowListStorage, timeRangeStorage } from '@extension/storage';
 import { ErrorDisplay, LoadingSpinner } from '@extension/ui';
 import { Settings } from 'lucide-react';
-import { useState, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 
 const timeRanges = [
   { label: 'Today', days: 1 },
@@ -16,33 +16,29 @@ const Popup = () => {
   const goals = useStorage(goalsStorage);
   const allowList = useStorage(allowListStorage);
   const histories = useStorage(weeklyHistoryStorage);
-
-  const [timeRangeDays, setTimeRangeDays] = useState(1);
+  const timeRange = useStorage(timeRangeStorage);
 
   const filteredHistories = useMemo(() => {
     if (!histories) return [];
 
     const now = new Date();
     const startTime =
-      timeRangeDays === 1
+      timeRange === 1
         ? new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-        : now.getTime() - timeRangeDays * 24 * 60 * 60 * 1000;
+        : now.getTime() - timeRange * 24 * 60 * 60 * 1000;
 
     return histories
       .filter(h => h.lastVisitTime && h.lastVisitTime >= startTime)
       .filter(h => h.url && !allowList.includes(getDomainName(h.url)));
-  }, [histories, timeRangeDays, allowList]);
+  }, [histories, timeRange, allowList]);
 
   const withEstimation = useMemo(() => {
     const estimated = estimateTimeSpent(filteredHistories);
-    if (timeRangeDays > 1) {
-      return estimated.map(item => ({
-        ...item,
-        timeSpent: item.timeSpent / timeRangeDays,
-      }));
+    if (timeRange > 1) {
+      return estimated.map(item => ({ ...item, timeSpent: item.timeSpent / timeRange }));
     }
     return estimated;
-  }, [filteredHistories, timeRangeDays]);
+  }, [filteredHistories, timeRange]);
 
   const handleSetGoal = useCallback(
     (domainName: string, limit: number) => {
@@ -53,12 +49,12 @@ const Popup = () => {
       }
 
       if (!isNaN(limit)) {
-        const dailyLimitInMs = (limit / timeRangeDays) * 60 * 60 * 1000;
+        const dailyLimitInMs = (limit / timeRange) * 60 * 60 * 1000;
         const newGoals = [...goals.filter(g => g.domainName !== domainName), { domainName, limit: dailyLimitInMs }];
         goalsStorage.set(newGoals);
       }
     },
-    [goals, timeRangeDays],
+    [goals, timeRange],
   );
 
   const optionsUrl = chrome.runtime.getURL('options/index.html');
@@ -86,8 +82,8 @@ const Popup = () => {
       <section className="p-3.5 text-slate-900">
         <select
           id="time-range-select"
-          value={timeRangeDays}
-          onChange={e => setTimeRangeDays(Number(e.target.value))}
+          value={timeRange}
+          onChange={e => timeRangeStorage.set(Number(e.target.value))}
           className="mb-4 w-full flex-1 rounded-md border border-slate-300 bg-white p-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500">
           {timeRanges.map(({ label, days }) => (
             <option key={days} value={days}>
@@ -105,7 +101,7 @@ const Popup = () => {
                   item={item}
                   onSetGoal={handleSetGoal}
                   goal={goal}
-                  timeRangeDays={timeRangeDays}
+                  timeRangeDays={timeRange}
                 />
               );
             })

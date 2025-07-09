@@ -4,3 +4,4 @@ export * from './goals-storage.js';
 export * from './daily-usage-storage.js';
 export * from './notification-log-storage.js';
 export * from './allow-list-storage.js';
+export * from './time-range-storage.js';

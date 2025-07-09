@@ -18,3 +18,8 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
+
+::backdrop,
+dialog + .backdrop {
+  backdrop-filter: blur(6px);
+}

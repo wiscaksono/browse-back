@@ -44,7 +44,7 @@ export const ListItem = ({ item, goal, timeRangeDays, onSetGoal }: ListItemProps
       <dialog
         ref={dialogRef}
         onClose={handleClose}
-        className="fixed left-[25px] top-1/2 m-0 w-[300px] -translate-y-1/2 space-y-2 rounded-md p-3.5">
+        className="fixed left-[25px] top-1/2 m-0 w-[300px] -translate-y-1/2 space-y-2 rounded-md border p-3.5">
         <div>
           <h2 className="text-base font-bold text-[#3E3E3E]">Set {periodLabel} Limit</h2>
           <p className="text-slate-600">Set a daily time limit (hours). Enter 0 to remove.</p>
@@ -55,9 +55,11 @@ export const ListItem = ({ item, goal, timeRangeDays, onSetGoal }: ListItemProps
             name="limit"
             min={0}
             max={24}
-            value={goal?.limit ? (goal.limit * timeRangeDays) / (60 * 60 * 1000) : undefined}
+            key={timeRangeDays}
+            defaultValue={goal?.limit ? (goal.limit * timeRangeDays) / (60 * 60 * 1000) : undefined}
             className="w-full rounded-md border border-slate-300 bg-white p-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500"
             placeholder="e.g., 8"
+            step={0.1}
             required
             // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus

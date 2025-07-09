@@ -1,10 +1,12 @@
-import { useStorage, withErrorBoundary, withSuspense } from '@extension/shared';
-import { allowListStorage } from '@extension/storage';
+import { estimateTimeSpent, getDomainName, useStorage, withErrorBoundary, withSuspense } from '@extension/shared';
+import { allowListStorage, timeRangeStorage, weeklyHistoryStorage } from '@extension/storage';
 import { ErrorDisplay, LoadingSpinner } from '@extension/ui';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 const Options = () => {
   const allowList = useStorage(allowListStorage);
+  const histories = useStorage(weeklyHistoryStorage);
+  const timeRange = useStorage(timeRangeStorage);
   const [newDomain, setNewDomain] = useState('');
 
   const handleAdd = () => {
@@ -18,8 +20,32 @@ const Options = () => {
     allowListStorage.set(allowList.filter(d => d !== domainToRemove));
   };
 
+  const filteredHistories = useMemo(() => {
+    if (!histories) return [];
+
+    const now = new Date();
+    const startTime =
+      timeRange === 1
+        ? new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+        : now.getTime() - timeRange * 24 * 60 * 60 * 1000;
+
+    return histories
+      .filter(h => h.lastVisitTime && h.lastVisitTime >= startTime)
+      .filter(h => h.url && !allowList.includes(getDomainName(h.url)));
+  }, [histories, timeRange, allowList]);
+
+  const withEstimation = useMemo(() => {
+    const estimated = estimateTimeSpent(filteredHistories);
+    if (timeRange > 1) {
+      return estimated.map(item => ({ ...item, timeSpent: item.timeSpent / timeRange }));
+    }
+    return estimated;
+  }, [filteredHistories, timeRange]);
+
+  console.log(withEstimation);
+
   return (
-    <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
+    <div className="container mx-auto">
       <h1>Allow List</h1>
       <p>Sites added here won't be tracked or appear in your report.</p>
 

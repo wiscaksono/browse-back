@@ -82,3 +82,5 @@ export type DailyUsageStorageType = BaseStorageType<DailyUsage>;
 
 export type NotificationLog = Record<string, number>; // domainName: timestamp
 export type NotificationLogStorageType = BaseStorageType<NotificationLog>;
+
+export type TimeRangeStorageType = BaseStorageType<number>;
