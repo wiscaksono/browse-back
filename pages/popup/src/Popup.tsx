@@ -1,16 +1,15 @@
-import { ListItem } from './components/list-item';
-import { useStorage, withErrorBoundary, withSuspense, estimateTimeSpent, getDomainName } from '@extension/shared';
+import {
+  useStorage,
+  withErrorBoundary,
+  withSuspense,
+  estimateTimeSpent,
+  getDomainName,
+  timeRanges,
+} from '@extension/shared';
 import { weeklyHistoryStorage, goalsStorage, allowListStorage, timeRangeStorage } from '@extension/storage';
-import { ErrorDisplay, LoadingSpinner } from '@extension/ui';
+import { ErrorDisplay, LoadingSpinner, ListItem } from '@extension/ui';
 import { Settings } from 'lucide-react';
 import { useMemo, useCallback } from 'react';
-
-const timeRanges = [
-  { label: 'Today', days: 1 },
-  { label: '3 Days', days: 3 },
-  { label: '5 Days', days: 5 },
-  { label: '7 Days', days: 7 },
-] as const;
 
 const Popup = () => {
   const goals = useStorage(goalsStorage);

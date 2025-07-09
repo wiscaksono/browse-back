@@ -1,72 +1,43 @@
-import { estimateTimeSpent, getDomainName, useStorage, withErrorBoundary, withSuspense } from '@extension/shared';
-import { allowListStorage, timeRangeStorage, weeklyHistoryStorage } from '@extension/storage';
+import { AllowListTab } from './components/allow-list-tab';
+import { HistoryTab } from './components/history-tab';
+import { withErrorBoundary, withSuspense } from '@extension/shared';
 import { ErrorDisplay, LoadingSpinner } from '@extension/ui';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 const Options = () => {
-  const allowList = useStorage(allowListStorage);
-  const histories = useStorage(weeklyHistoryStorage);
-  const timeRange = useStorage(timeRangeStorage);
-  const [newDomain, setNewDomain] = useState('');
-
-  const handleAdd = () => {
-    if (newDomain && !allowList.includes(newDomain)) {
-      allowListStorage.set([...allowList, newDomain.trim()]);
-      setNewDomain('');
-    }
-  };
-
-  const handleRemove = (domainToRemove: string) => {
-    allowListStorage.set(allowList.filter(d => d !== domainToRemove));
-  };
-
-  const filteredHistories = useMemo(() => {
-    if (!histories) return [];
-
-    const now = new Date();
-    const startTime =
-      timeRange === 1
-        ? new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-        : now.getTime() - timeRange * 24 * 60 * 60 * 1000;
-
-    return histories
-      .filter(h => h.lastVisitTime && h.lastVisitTime >= startTime)
-      .filter(h => h.url && !allowList.includes(getDomainName(h.url)));
-  }, [histories, timeRange, allowList]);
-
-  const withEstimation = useMemo(() => {
-    const estimated = estimateTimeSpent(filteredHistories);
-    if (timeRange > 1) {
-      return estimated.map(item => ({ ...item, timeSpent: item.timeSpent / timeRange }));
-    }
-    return estimated;
-  }, [filteredHistories, timeRange]);
-
-  console.log(withEstimation);
+  const [activeTab, setActiveTab] = useState('history');
 
   return (
-    <div className="container mx-auto">
-      <h1>Allow List</h1>
-      <p>Sites added here won't be tracked or appear in your report.</p>
+    <main>
+      <header className="bg-[#3E3E3E]">
+        <div className="container mx-auto flex max-w-2xl flex-col items-center justify-center gap-2 py-10">
+          <h1 className="text-4xl font-semibold text-slate-50">Browse Back</h1>
+          <p className="text-center text-base font-medium text-slate-300">
+            Get a weekly snapshot of your browsing habits—see exactly where your time goes, spot trends in your online
+            activity, and gain fresh insights into your digital life. Take a moment to reflect, make small tweaks, and
+            enjoy a smarter, more intentional way to surf!
+          </p>
+        </div>
+      </header>
 
-      <div>
-        <input
-          type="text"
-          value={newDomain}
-          onChange={e => setNewDomain(e.target.value)}
-          placeholder="e.g., figma.com"
-        />
-        <button onClick={handleAdd}>Add</button>
+      <div className="border-b border-[#3E3E3E]">
+        <div className="container mx-auto flex w-full max-w-2xl">
+          <nav className="grid h-10 w-full grid-cols-2 divide-x divide-[#3E3E3E]">
+            <button className="h-full w-full text-lg font-semibold" onClick={() => setActiveTab('history')}>
+              History
+            </button>
+            <button className="h-full w-full text-lg font-semibold" onClick={() => setActiveTab('allow-list')}>
+              Allow List
+            </button>
+          </nav>
+        </div>
       </div>
 
-      <ul>
-        {allowList.map(domain => (
-          <li key={domain}>
-            {domain} <button onClick={() => handleRemove(domain)}>Remove</button>
-          </li>
-        ))}
-      </ul>
-    </div>
+      <section className="container mx-auto max-w-xl border-x border-[#3E3E3E]">
+        {activeTab === 'history' && <HistoryTab />}
+        {activeTab === 'allow-list' && <AllowListTab />}
+      </section>
+    </main>
   );
 };
 
