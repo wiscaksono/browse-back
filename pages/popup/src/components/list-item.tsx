@@ -117,7 +117,7 @@ export const ListItem = ({ item, goal, timeRangeDays, onSetGoal }: ListItemProps
       {goal && (
         <div className="mt-1.5 border-t pt-1.5">
           <div className="mb-0.5 flex justify-between text-xs text-slate-500">
-            <span>{periodLabel} Goal</span>
+            <span className="font-medium text-slate-600">{periodLabel} Goal</span>
             {progress > 100 ? (
               <span className="font-medium text-red-500">You've exceeded your goal!</span>
             ) : (

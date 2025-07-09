@@ -1,4 +1,4 @@
-import { RingLoader } from 'react-spinners';
+import { ClipLoader } from 'react-spinners';
 
 interface ILoadingSpinnerProps {
   size?: number;
@@ -6,6 +6,6 @@ interface ILoadingSpinnerProps {
 
 export const LoadingSpinner = ({ size }: ILoadingSpinnerProps) => (
   <div className={'flex min-h-screen items-center justify-center bg-slate-50'}>
-    <RingLoader size={size ?? 100} color={'aqua'} />
+    <ClipLoader size={size ?? 100} color={'#3E3E3E'} />
   </div>
 );
