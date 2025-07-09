@@ -23,14 +23,14 @@ export const excludeValuesFromBaseArray = <B extends string[], E extends (string
 export const sleep = async (time: number) => new Promise(r => setTimeout(r, time));
 
 export const humanizeDuration = (ms: number): string => {
-  const sec = Math.floor(ms / 1000);
-  const min = Math.floor(sec / 60);
-  const hr = Math.floor(min / 60);
-  const day = Math.floor(hr / 24);
+  const sec = Math.floor(ms / 1000) % 60;
+  const min = Math.floor(ms / (1000 * 60)) % 60;
+  const hr = Math.floor(ms / (1000 * 60 * 60)) % 24;
+  const day = Math.floor(ms / (1000 * 60 * 60 * 24));
 
-  if (day > 0) return `${day}d ${hr % 24}h`;
-  if (hr > 0) return `${hr}h ${min % 60}m`;
-  if (min > 0) return `${min}m ${sec % 60}s`;
+  if (day > 0) return min === 0 && hr === 0 ? `${day}d` : `${day}d ${hr}h`;
+  if (hr > 0) return min === 0 ? `${hr}h` : `${hr}h ${min}m`;
+  if (min > 0) return sec === 0 ? `${min}m` : `${min}m ${sec}s`;
   return `${sec}s`;
 };
 

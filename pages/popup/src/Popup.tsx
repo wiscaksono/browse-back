@@ -2,6 +2,7 @@ import { ListItem } from './components/list-item';
 import { useStorage, withErrorBoundary, withSuspense, estimateTimeSpent, getDomainName } from '@extension/shared';
 import { weeklyHistoryStorage, goalsStorage, allowListStorage } from '@extension/storage';
 import { ErrorDisplay, LoadingSpinner } from '@extension/ui';
+import { Settings } from 'lucide-react';
 import { useState, useMemo } from 'react';
 
 const timeRanges = [
@@ -34,10 +35,15 @@ const Popup = () => {
 
   const withEstimation = useMemo(() => estimateTimeSpent(filteredHistories), [filteredHistories]);
 
-  const handleSetGoal = (domainName: string) => {
-    const hours = prompt(`Set a daily time limit for ${domainName} (in hours):`);
-    if (hours && !isNaN(parseFloat(hours))) {
-      const limitInMs = parseFloat(hours) * 60 * 60 * 1000;
+  const handleSetGoal = (domainName: string, limit: number) => {
+    if (limit === 0) {
+      const newGoals = goals.filter(g => g.domainName !== domainName);
+      goalsStorage.set(newGoals);
+      return;
+    }
+
+    if (!isNaN(limit)) {
+      const limitInMs = limit * 60 * 60 * 1000; // Convert to milliseconds
 
       // Update the goals storage
       const newGoals = [...goals.filter(g => g.domainName !== domainName), { domainName, limit: limitInMs }];
@@ -48,47 +54,48 @@ const Popup = () => {
   const optionsUrl = chrome.runtime.getURL('options/index.html');
 
   return (
-    <div className="w-full bg-slate-50 p-3.5 text-slate-900">
-      <header className="mb-4 text-center">
-        <h2 className="text-xl font-bold text-slate-900">Your Digital Mirror</h2>
-        <p className="text-sm text-slate-600">
-          Here's where your time <b>really</b> went.
-        </p>
+    <div className="w-full bg-slate-50">
+      <header className="sticky top-0 flex w-full items-center justify-between gap-2 bg-[#3E3E3E] p-3.5">
+        <div>
+          <h2 className="text-xl font-bold text-slate-50">Browse Back</h2>
+          <p className="text-slate-200">
+            Here's where your time <b>really</b> went.
+          </p>
+        </div>
+        <div className="flex items-center gap-1">
+          <a
+            className="text-slate-50"
+            href={optionsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Open Settings">
+            <Settings size={18} />
+          </a>
+        </div>
       </header>
-
-      <div className="mb-4 flex w-full items-center justify-between gap-2">
+      <section className="p-3.5 text-slate-900">
         <select
           id="time-range-select"
           value={timeRangeDays}
           onChange={e => setTimeRangeDays(Number(e.target.value))}
-          className="w-full flex-1 rounded-md border border-slate-300 bg-white p-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500">
+          className="mb-4 w-full flex-1 rounded-md border border-slate-300 bg-white p-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500">
           {timeRanges.map(({ label, days }) => (
             <option key={days} value={days}>
               {label}
             </option>
           ))}
         </select>
-
-        <a
-          href={optionsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          title="Open Settings"
-          className="rounded-md border border-slate-300 bg-white p-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500">
-          ⚙️ Settings
-        </a>
-      </div>
-
-      <ul className="divide-y divide-slate-200">
-        {withEstimation.length > 0 ? (
-          withEstimation.map(item => {
-            const goal = goals.find(g => g.domainName === item.domainName);
-            return <ListItem key={item.domainName} item={item} onSetGoal={handleSetGoal} goal={goal} />;
-          })
-        ) : (
-          <p className="py-4 text-center text-slate-500">No Browse history for this period.</p>
-        )}
-      </ul>
+        <ul className="space-y-2">
+          {withEstimation.length > 0 ? (
+            withEstimation.map(item => {
+              const goal = goals.find(g => g.domainName === item.domainName);
+              return <ListItem key={item.domainName} item={item} onSetGoal={handleSetGoal} goal={goal} />;
+            })
+          ) : (
+            <p className="py-4 text-center text-slate-500">No Browse history for this period.</p>
+          )}
+        </ul>
+      </section>
     </div>
   );
 };
