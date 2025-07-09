@@ -2,6 +2,18 @@
 
 Browse Back is a Chrome extension designed to help you understand your Browse habits and take control of your digital life. It provides a weekly snapshot of your online activity, allowing you to reflect on where your time is spent and set goals to improve your focus.
 
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/cc6c02fd-05e0-43d3-9129-6a40ff574ff2" />
+    </td>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/45bf5602-b499-4e23-aae7-a3bbd2681351" />
+    </td>
+  </tr>
+</table>
+
+
 ## Features
 
 - **Time Tracking:** Automatically tracks the time you spend on different websites.
@@ -53,7 +65,7 @@ You will need to have [Node.js](https://nodejs.org/) and [pnpm](https://pnpm.io/
     - Open Chrome and navigate to `chrome://extensions`.
     - Enable "Developer mode" in the top right corner.
     - Click "Load unpacked."
-    - Select the `chrome-extension/dist` directory from the project folder.
+    - Select the `/dist` directory from the project folder.
 
 ## Development
 
