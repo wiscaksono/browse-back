@@ -22,7 +22,7 @@ export const ListItem = ({ item, goal, timeRangeDays, onSetGoal }: ListItemProps
 
   const handleOpen = () => {
     if (!dialogRef.current) return;
-    dialogRef.current.showModal(); // Open as a modal dialog
+    dialogRef.current.showModal();
   };
 
   const handleClose = () => {
@@ -55,7 +55,7 @@ export const ListItem = ({ item, goal, timeRangeDays, onSetGoal }: ListItemProps
             name="limit"
             min={0}
             max={24}
-            defaultValue={goal?.limit ? (goal.limit * timeRangeDays) / 60 / 60 / 1000 : undefined}
+            value={goal?.limit ? (goal.limit * timeRangeDays) / (60 * 60 * 1000) : undefined}
             className="w-full rounded-md border border-slate-300 bg-white p-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500"
             placeholder="e.g., 8"
             required

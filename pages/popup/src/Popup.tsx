@@ -3,7 +3,7 @@ import { useStorage, withErrorBoundary, withSuspense, estimateTimeSpent, getDoma
 import { weeklyHistoryStorage, goalsStorage, allowListStorage } from '@extension/storage';
 import { ErrorDisplay, LoadingSpinner } from '@extension/ui';
 import { Settings } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 
 const timeRanges = [
   { label: 'Today', days: 1 },
@@ -44,19 +44,22 @@ const Popup = () => {
     return estimated;
   }, [filteredHistories, timeRangeDays]);
 
-  const handleSetGoal = (domainName: string, limit: number) => {
-    if (limit === 0) {
-      const newGoals = goals.filter(g => g.domainName !== domainName);
-      goalsStorage.set(newGoals);
-      return;
-    }
+  const handleSetGoal = useCallback(
+    (domainName: string, limit: number) => {
+      if (limit === 0) {
+        const newGoals = goals.filter(g => g.domainName !== domainName);
+        goalsStorage.set(newGoals);
+        return;
+      }
 
-    if (!isNaN(limit)) {
-      const limitInMs = limit * timeRangeDays * 60 * 60 * 1000;
-      const newGoals = [...goals.filter(g => g.domainName !== domainName), { domainName, limit: limitInMs }];
-      goalsStorage.set(newGoals);
-    }
-  };
+      if (!isNaN(limit)) {
+        const dailyLimitInMs = (limit / timeRangeDays) * 60 * 60 * 1000;
+        const newGoals = [...goals.filter(g => g.domainName !== domainName), { domainName, limit: dailyLimitInMs }];
+        goalsStorage.set(newGoals);
+      }
+    },
+    [goals, timeRangeDays],
+  );
 
   const optionsUrl = chrome.runtime.getURL('options/index.html');
 
