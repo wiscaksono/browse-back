@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils';
 import { humanizeDuration, useStorage } from '@extension/shared';
 import { ignoreListStorage } from '@extension/storage';
 import { Timer, X } from 'lucide-react';
@@ -39,12 +40,17 @@ export const ListItem = ({ item, goal, timeRangeDays, onSetGoal }: ListItemProps
     handleClose();
   };
 
+  const isPopup = window.location.pathname.includes('popup');
+
   return (
     <li key={item.domainName} className="flex flex-col gap-0.5 rounded-md border bg-white p-2">
       <dialog
         ref={dialogRef}
         onClose={handleClose}
-        className="fixed left-[25px] top-1/2 m-0 w-[300px] -translate-y-1/2 space-y-2 rounded-md border p-3.5">
+        className={cn(
+          'fixed top-1/2 m-0 w-[300px] -translate-y-1/2 space-y-2 rounded-md border p-3.5',
+          isPopup ? 'left-[25px]' : 'left-1/2 -translate-x-1/2',
+        )}>
         <div>
           <h2 className="text-base font-bold text-[#3E3E3E]">Set {periodLabel} Limit</h2>
           <p className="text-slate-600">Set a daily time limit (hours). Enter 0 to remove.</p>
