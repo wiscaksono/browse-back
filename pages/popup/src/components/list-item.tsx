@@ -8,15 +8,17 @@ import type { Goal } from '@extension/storage/lib/base';
 interface ListItemProps {
   item: TimeSpentResult;
   goal?: Goal;
+  timeRangeDays: number;
   onSetGoal: (domain: string, limit: number) => void;
 }
 
-export const ListItem = ({ item, goal, onSetGoal }: ListItemProps) => {
-  const progress = goal ? (item.timeSpent / goal.limit) * 100 : 0;
+export const ListItem = ({ item, goal, timeRangeDays, onSetGoal }: ListItemProps) => {
+  const progress = goal ? (item.timeSpent / (goal.limit * timeRangeDays)) * 100 : 0;
   const allowList = useStorage(allowListStorage);
   const handleIgnore = () => allowListStorage.set([...allowList, item.domainName.trim()]);
 
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const periodLabel = timeRangeDays === 1 ? 'Daily' : `Limit for ${timeRangeDays} days`;
 
   const handleOpen = () => {
     if (!dialogRef.current) return;
@@ -44,7 +46,7 @@ export const ListItem = ({ item, goal, onSetGoal }: ListItemProps) => {
         onClose={handleClose}
         className="fixed left-[25px] top-1/2 m-0 w-[300px] -translate-y-1/2 space-y-2 rounded-md p-3.5">
         <div>
-          <h2 className="text-base font-bold text-[#3E3E3E]">Daily Limit</h2>
+          <h2 className="text-base font-bold text-[#3E3E3E]">Set {periodLabel} Limit</h2>
           <p className="text-slate-600">Set a daily time limit (hours). Enter 0 to remove.</p>
         </div>
         <form className="flex items-center gap-2" onSubmit={handleSubmit}>
@@ -53,7 +55,7 @@ export const ListItem = ({ item, goal, onSetGoal }: ListItemProps) => {
             name="limit"
             min={0}
             max={24}
-            defaultValue={goal?.limit ? goal.limit / 60 / 60 / 1000 : undefined}
+            defaultValue={goal?.limit ? (goal.limit * timeRangeDays) / 60 / 60 / 1000 : undefined}
             className="w-full rounded-md border border-slate-300 bg-white p-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500"
             placeholder="e.g., 8"
             required
@@ -115,12 +117,13 @@ export const ListItem = ({ item, goal, onSetGoal }: ListItemProps) => {
       {goal && (
         <div className="mt-1.5 border-t pt-1.5">
           <div className="mb-0.5 flex justify-between text-xs text-slate-500">
-            <span>Daily Goal</span>
+            <span>{periodLabel} Goal</span>
             {progress > 100 ? (
               <span className="font-medium text-red-500">You've exceeded your goal!</span>
             ) : (
               <span>
-                {humanizeDuration(goal.limit)} Goal • {humanizeDuration(goal.limit - item.timeSpent)} left
+                {humanizeDuration(goal.limit * timeRangeDays)} Goal •{' '}
+                {humanizeDuration(goal.limit * timeRangeDays - item.timeSpent)} left
               </span>
             )}
           </div>

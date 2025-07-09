@@ -17,7 +17,7 @@ const Popup = () => {
   const allowList = useStorage(allowListStorage);
   const histories = useStorage(weeklyHistoryStorage);
 
-  const [timeRangeDays, setTimeRangeDays] = useState(1); // Default to 7 days
+  const [timeRangeDays, setTimeRangeDays] = useState(1);
 
   const filteredHistories = useMemo(() => {
     if (!histories) return [];
@@ -33,7 +33,16 @@ const Popup = () => {
       .filter(h => h.url && !allowList.includes(getDomainName(h.url)));
   }, [histories, timeRangeDays, allowList]);
 
-  const withEstimation = useMemo(() => estimateTimeSpent(filteredHistories), [filteredHistories]);
+  const withEstimation = useMemo(() => {
+    const estimated = estimateTimeSpent(filteredHistories);
+    if (timeRangeDays > 1) {
+      return estimated.map(item => ({
+        ...item,
+        timeSpent: item.timeSpent / timeRangeDays,
+      }));
+    }
+    return estimated;
+  }, [filteredHistories, timeRangeDays]);
 
   const handleSetGoal = (domainName: string, limit: number) => {
     if (limit === 0) {
@@ -43,9 +52,7 @@ const Popup = () => {
     }
 
     if (!isNaN(limit)) {
-      const limitInMs = limit * 60 * 60 * 1000; // Convert to milliseconds
-
-      // Update the goals storage
+      const limitInMs = limit * timeRangeDays * 60 * 60 * 1000;
       const newGoals = [...goals.filter(g => g.domainName !== domainName), { domainName, limit: limitInMs }];
       goalsStorage.set(newGoals);
     }
@@ -54,7 +61,7 @@ const Popup = () => {
   const optionsUrl = chrome.runtime.getURL('options/index.html');
 
   return (
-    <div className="w-full bg-slate-50">
+    <div className="w-full bg-slate-100">
       <header className="sticky top-0 flex w-full items-center justify-between gap-2 bg-[#3E3E3E] p-3.5">
         <div>
           <h2 className="text-xl font-bold text-slate-50">Browse Back</h2>
@@ -89,7 +96,15 @@ const Popup = () => {
           {withEstimation.length > 0 ? (
             withEstimation.map(item => {
               const goal = goals.find(g => g.domainName === item.domainName);
-              return <ListItem key={item.domainName} item={item} onSetGoal={handleSetGoal} goal={goal} />;
+              return (
+                <ListItem
+                  key={item.domainName}
+                  item={item}
+                  onSetGoal={handleSetGoal}
+                  goal={goal}
+                  timeRangeDays={timeRangeDays}
+                />
+              );
             })
           ) : (
             <p className="py-4 text-center text-slate-500">No Browse history for this period.</p>
