@@ -7,7 +7,7 @@ import { useState } from 'react';
 
 const Options = () => {
   const ignoreList = useStorage(ignoreListStorage);
-  const [activeTab, setActiveTab] = useState('ignore-list');
+  const [activeTab, setActiveTab] = useState('history');
 
   return (
     <main>
