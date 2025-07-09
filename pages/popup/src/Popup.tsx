@@ -6,14 +6,14 @@ import {
   getDomainName,
   timeRanges,
 } from '@extension/shared';
-import { weeklyHistoryStorage, goalsStorage, allowListStorage, timeRangeStorage } from '@extension/storage';
+import { weeklyHistoryStorage, goalsStorage, timeRangeStorage, ignoreListStorage } from '@extension/storage';
 import { ErrorDisplay, LoadingSpinner, ListItem } from '@extension/ui';
 import { Settings } from 'lucide-react';
 import { useMemo, useCallback } from 'react';
 
 const Popup = () => {
   const goals = useStorage(goalsStorage);
-  const allowList = useStorage(allowListStorage);
+  const ignoreList = useStorage(ignoreListStorage);
   const histories = useStorage(weeklyHistoryStorage);
   const timeRange = useStorage(timeRangeStorage);
 
@@ -28,8 +28,8 @@ const Popup = () => {
 
     return histories
       .filter(h => h.lastVisitTime && h.lastVisitTime >= startTime)
-      .filter(h => h.url && !allowList.includes(getDomainName(h.url)));
-  }, [histories, timeRange, allowList]);
+      .filter(h => h.url && !ignoreList.includes(getDomainName(h.url)));
+  }, [histories, timeRange, ignoreList]);
 
   const withEstimation = useMemo(() => {
     const estimated = estimateTimeSpent(filteredHistories);

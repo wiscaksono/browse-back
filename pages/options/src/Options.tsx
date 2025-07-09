@@ -1,11 +1,13 @@
-import { AllowListTab } from './components/allow-list-tab';
 import { HistoryTab } from './components/history-tab';
-import { withErrorBoundary, withSuspense } from '@extension/shared';
+import { IgnoreListTab } from './components/ignore-list-tab';
+import { useStorage, withErrorBoundary, withSuspense } from '@extension/shared';
+import { ignoreListStorage } from '@extension/storage';
 import { ErrorDisplay, LoadingSpinner } from '@extension/ui';
 import { useState } from 'react';
 
 const Options = () => {
-  const [activeTab, setActiveTab] = useState('history');
+  const ignoreList = useStorage(ignoreListStorage);
+  const [activeTab, setActiveTab] = useState('ignore-list');
 
   return (
     <main>
@@ -26,8 +28,8 @@ const Options = () => {
             <button className="h-full w-full text-lg font-semibold" onClick={() => setActiveTab('history')}>
               History
             </button>
-            <button className="h-full w-full text-lg font-semibold" onClick={() => setActiveTab('allow-list')}>
-              Allow List
+            <button className="h-full w-full text-lg font-semibold" onClick={() => setActiveTab('ignore-list')}>
+              Ignore List {ignoreList.length > 0 ? `(${ignoreList.length})` : ''}
             </button>
           </nav>
         </div>
@@ -35,7 +37,7 @@ const Options = () => {
 
       <section className="container mx-auto max-w-xl border-x border-[#3E3E3E]">
         {activeTab === 'history' && <HistoryTab />}
-        {activeTab === 'allow-list' && <AllowListTab />}
+        {activeTab === 'ignore-list' && <IgnoreListTab />}
       </section>
     </main>
   );

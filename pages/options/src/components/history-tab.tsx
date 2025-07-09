@@ -1,5 +1,5 @@
 import { estimateTimeSpent, getDomainName, humanizeDuration, useStorage, timeRanges } from '@extension/shared';
-import { allowListStorage, goalsStorage, timeRangeStorage, weeklyHistoryStorage } from '@extension/storage';
+import { ignoreListStorage, goalsStorage, timeRangeStorage, weeklyHistoryStorage } from '@extension/storage';
 import { ListItem } from '@extension/ui';
 import { Table2 } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
@@ -33,7 +33,7 @@ const CustomTooltip = ({ active, payload }: TooltipContentProps<string, string>)
 
 export const HistoryTab = () => {
   const goals = useStorage(goalsStorage);
-  const allowList = useStorage(allowListStorage);
+  const ignoreList = useStorage(ignoreListStorage);
   const histories = useStorage(weeklyHistoryStorage);
   const timeRange = useStorage(timeRangeStorage);
 
@@ -48,8 +48,8 @@ export const HistoryTab = () => {
 
     return histories
       .filter(h => h.lastVisitTime && h.lastVisitTime >= startTime)
-      .filter(h => h.url && !allowList.includes(getDomainName(h.url)));
-  }, [histories, timeRange, allowList]);
+      .filter(h => h.url && !ignoreList.includes(getDomainName(h.url)));
+  }, [histories, timeRange, ignoreList]);
 
   const withEstimation = useMemo(() => {
     const estimated = estimateTimeSpent(filteredHistories);
@@ -76,9 +76,32 @@ export const HistoryTab = () => {
     [goals, timeRange],
   );
 
+  const handleExportToCSV = () => {
+    const header = ['Domain', 'Time Spent', 'Goal'];
+    const rows = withEstimation.map(item => {
+      const goal = goals.find(g => g.domainName === item.domainName);
+      return [
+        `${item.domainName}`,
+        `${humanizeDuration(item.timeSpent)}`,
+        `${humanizeDuration(goal?.limit ?? 0)}`,
+      ].join(',');
+    });
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [header.join(','), ...rows].join('\n');
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'browse-back-history.csv');
+    document.body.appendChild(link);
+
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div>
-      <div className="mb-4 flex items-center gap-2 p-2">
+      <div className="flex items-center gap-2 p-2">
         <select
           id="time-range-select"
           value={timeRange}
@@ -90,7 +113,9 @@ export const HistoryTab = () => {
             </option>
           ))}
         </select>
-        <button className="flex items-center gap-1 rounded-md border border-slate-300 bg-slate-200 p-2 font-medium text-slate-700 transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-slate-500">
+        <button
+          className="flex items-center gap-1 rounded-md border border-slate-300 bg-slate-200 p-2 font-medium text-slate-700 transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-slate-500"
+          onClick={handleExportToCSV}>
           <Table2 size={18} />
           Export to CSV
         </button>

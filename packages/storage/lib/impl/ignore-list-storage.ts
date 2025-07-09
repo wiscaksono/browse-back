@@ -6,4 +6,4 @@ const storage = createStorage<string[]>('allow-list-key', [], {
   liveUpdate: true,
 });
 
-export const allowListStorage = { ...storage };
+export const ignoreListStorage = { ...storage };

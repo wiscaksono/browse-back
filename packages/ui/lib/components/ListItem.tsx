@@ -1,5 +1,5 @@
 import { humanizeDuration, useStorage } from '@extension/shared';
-import { allowListStorage } from '@extension/storage';
+import { ignoreListStorage } from '@extension/storage';
 import { Timer, X } from 'lucide-react';
 import { useRef } from 'react';
 import type { TimeSpentResult } from '@extension/shared';
@@ -14,8 +14,8 @@ interface ListItemProps {
 
 export const ListItem = ({ item, goal, timeRangeDays, onSetGoal }: ListItemProps) => {
   const progress = goal ? (item.timeSpent / (goal.limit * timeRangeDays)) * 100 : 0;
-  const allowList = useStorage(allowListStorage);
-  const handleIgnore = () => allowListStorage.set([...allowList, item.domainName.trim()]);
+  const ignoreList = useStorage(ignoreListStorage);
+  const handleIgnore = () => ignoreListStorage.set([...ignoreList, item.domainName.trim()]);
 
   const dialogRef = useRef<HTMLDialogElement>(null);
   const periodLabel = timeRangeDays === 1 ? 'Daily' : `Limit for ${timeRangeDays} days`;
